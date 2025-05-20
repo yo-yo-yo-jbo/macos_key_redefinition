@@ -154,3 +154,13 @@ This looks like a lot - let's talk about the important parts:
 - Then, it uses the `security` utility to *unlock the keychain* with the user's password - you can see here how one needs the user's password to interact with the keychain. Keychain will remain unlocked for a configurable time.
 - We then use the `security` tool again to find the generic password for the `Chrome Safe Storage` item and use the `-w` flag to read the secret.
 - That secret is then going to be used with `PBKDF` (as described earlier) to decrypt the items from the Login Data.
+
+The problem for attackers is they sometimes do not know the user's password - and thus, no way to decrypt those saved form passwords.  
+However - an attacker could just *set* the new password. Sure - this invalidates all existing data, but starting that point - an attacker could just decrypt arbitrary secrets since they are the ones who set up the password to begin with!  
+Here is how it's done:
+```
+security delete-generic-password -a "Chrome Safe Storage"
+security add-generic-password -A -a "Chrome Safe Storage" -w "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+```
+
+Note the `-A` flag which sets up an empty ACL for the item, making all applications accessible to this secret. Of course, a more sophisticated attacker could set up an ACL exclusive to Chrome.
