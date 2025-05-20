@@ -105,6 +105,10 @@ Apple's fix, by the way, consists of a new keychain item called `com.apple.scope
 One idea that comes to mind is using the same concept of redefining a keychain item to control secrets.  
 Usually that would be pointless, as attackers usually want to *steal* secrets rather than controlling new secrets, but it might help for some scenarios.  
 One such scenario is how private data is stored in Chromium-based browsers.  
+Chromium uses an internal module called `os_crypt` which encrypts sensitive data with the help of the OS:
+- Windows uses [DPAPI](https://en.wikipedia.org/wiki/Data_Protection_API) master password.
+- On macOS, the keychain is used instead.
+
 Let's see how attackers "normally" steal credentials:
 ```python
 import subprocess
