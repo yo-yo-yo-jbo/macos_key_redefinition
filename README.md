@@ -92,6 +92,11 @@ I was originally looking into macOS Sandbox escapes - specifically, ones that in
 That mechanism can save *persistent* access tokens to arbitrary files by a sandboxed app - and by definition - the sandboxed app must have access to that persistent storage.  
 My thought was adding arbitrary items to that persistent storage (saved in a `.plist` file by Office, for instance) but those entries are HMAC-signed with a key.  
 Long story short - that key is derived by some sort of "master key" saved in the keychain item `com.apple.scopedbookmarksagent.xpc`.  
-That item is accessed by an unsandboxed daemon called the "Scoped Bookmarks Agent" that accepts IPC from sandboxed apps and grants them access to files, after checking the HMAC.  
-This got me stuck for a while since the ACL for that keychain item does not allow me to view the secret master key:
+That item is accessed by an unsandboxed daemon called the "Scoped Bookmarks Agent" that accepts IPC from sandboxed apps and grants them access to files, after checking the HMAC. This got me stuck for a while since the ACL for that keychain item does not allow me to view the secret master key - it only allows the `ScopedBookmarksAgent` to access that.  
+Then I had an idea - what if instead of reading the secret, I would delete the existing keychain item and create a new one?
+- This will invalidate all previous persistent file access, as this invalidates the HMAC items.
+- However, from that point on I *know* the secret since I decided what it was - so I could *arbitrarily sign entries*.
+
+That worked really well, and I call that technique "keychain item redefinition attack".  
+Apple's fix, by the way, consists of a new keychain item called `com.apple.scopedbookmarksagent.xpc.encrypted` - I haven't investigated that yet, and it could be a cool area of research!
 
