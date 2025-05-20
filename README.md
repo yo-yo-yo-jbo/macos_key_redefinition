@@ -77,3 +77,11 @@ OmgThisPasswordIsSecret!
 ```
 
 There are more flags and operations `security` can do - feel free to read in the [manual page](https://ss64.com/mac/security.html).
+
+## Background - how CVE-2025-31191 worked
+I was originally looking into macOS Sandbox escapes - specifically, ones that involve a mechanism called Security-Scoped-Bookmarks.  
+That mechanism can save *persistent* access tokens to arbitrary files by a sandboxed app - and by definition - the sandboxed app must have access to that persistent storage.  
+My thought was adding arbitrary items to that persistent storage (saved in a `.plist` file by Office, for instance) but those entries are HMAC-signed with a key.  
+Long story short - that key is derived by some sort of "master key" saved in the keychain item `com.apple.scopedbookmarksagent.xpc`.  
+That item is accessed by an unsandboxed daemon called the "Scoped Bookmarks Agent" that accepts IPC from sandboxed apps and grants them access to files, after checking the HMAC.  
+This got me stuck for a while since 
