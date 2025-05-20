@@ -96,7 +96,12 @@ That item is accessed by an unsandboxed daemon called the "Scoped Bookmarks Agen
 Then I had an idea - what if instead of reading the secret, I would delete the existing keychain item and create a new one?
 - This will invalidate all previous persistent file access, as this invalidates the HMAC items.
 - However, from that point on I *know* the secret since I decided what it was - so I could *arbitrarily sign entries*.
+- Note the ACL does not prevent the keychain item from being deleted.
 
 That worked really well, and I call that technique "keychain item redefinition attack".  
 Apple's fix, by the way, consists of a new keychain item called `com.apple.scopedbookmarksagent.xpc.encrypted` - I haven't investigated that yet, and it could be a cool area of research!
 
+## Stealing browser secrets with key redefinition attacks
+One idea that comes to mind is using the same concept of redefining a keychain item to control secrets.  
+Usually that would be pointless, as attackers usually want to *steal* secrets rather than controlling new secrets, but it might help for some scenarios.  
+One such scenario is how private data is stored in Chromium-based browsers.  
