@@ -167,4 +167,7 @@ security delete-generic-password -a "Chrome Safe Storage"
 security add-generic-password -A -a "Chrome Safe Storage" -w "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
 ```
 
+This deletes the old master secret and sets a new one as `AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA` instead.  
 Note the `-A` flag which sets up an empty ACL for the item, making all applications accessible to this secret. Of course, a more sophisticated attacker could set up an ACL exclusive to Chrome.
+Also note all Chromium browsers are similar but might have different names (e.g. you'll see an "Edge Safe Storage" for Edge and a "Brave Safe Storage" for Brave).  
+More interestingly, this also works for Electron Apps that use V8 - for instance, `Claude Desktop`.
