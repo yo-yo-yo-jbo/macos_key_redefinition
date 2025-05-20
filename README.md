@@ -18,3 +18,26 @@ Keychain files are located as physical files on the device:
 - iCloud keychain items are synced across devices and encrypted end-to-end, but locally cached data may reside in the user's keychain directory with additional protections.
 
 Let's examine the structure of a user keychain:
+```
+jbo@McJbo ~ % sqlite3 /Users/jbo/Library/Keychains/*/keychain-2.db
+SQLite version 3.36.0 2021-06-18 18:36:39
+Enter ".help" for usage hints.
+sqlite> .schema
+CREATE TABLE sqlite_sequence(name,seq);
+...
+CREATE TABLE genp(rowid INTEGER PRIMARY KEY AUTOINCREMENT,cdat REAL,mdat REAL,desc BLOB,icmt BLOB,crtr INTEGER,type INTEGER,scrp INTEGER,labl BLOB,alis BLOB,invi INTEGER,nega INTEGER,cusi INTEGER,prot BLOB,acct BLOB NOT NULL DEFAULT '',svce BLOB NOT NULL DEFAULT '',gena BLOB,data BLOB,agrp TEXT NOT NULL,pdmn TEXT,sync INTEGER NOT NULL DEFAULT 0,tomb INTEGER NOT NULL DEFAULT 0,sha1 BLOB,vwht TEXT,tkid TEXT,musr BLOB NOT NULL,UUID TEXT,sysb INTEGER DEFAULT 0,pcss INTEGER,pcsk BLOB,pcsi BLOB,persistref BLOB NOT NULL,clip INTEGER NOT NULL DEFAULT 0,ggrp TEXT,UNIQUE(acct,svce,agrp,sync,vwht,tkid,musr,ggrp));
+...
+CREATE TABLE inet(rowid INTEGER PRIMARY KEY AUTOINCREMENT,cdat REAL,mdat REAL,desc BLOB,icmt BLOB,crtr INTEGER,type INTEGER,scrp INTEGER,labl BLOB,alis BLOB,invi INTEGER,nega INTEGER,cusi INTEGER,prot BLOB,acct BLOB NOT NULL DEFAULT '',sdmn BLOB NOT NULL DEFAULT '',srvr BLOB NOT NULL DEFAULT '',ptcl INTEGER NOT NULL DEFAULT 0,atyp BLOB NOT NULL DEFAULT '',port INTEGER NOT NULL DEFAULT 0,path BLOB NOT NULL DEFAULT '',data BLOB,agrp TEXT NOT NULL,pdmn TEXT,sync INTEGER NOT NULL DEFAULT 0,tomb INTEGER NOT NULL DEFAULT 0,sha1 BLOB,vwht TEXT,tkid TEXT,musr BLOB NOT NULL,UUID TEXT,sysb INTEGER DEFAULT 0,pcss INTEGER,pcsk BLOB,pcsi BLOB,persistref BLOB NOT NULL,clip INTEGER NOT NULL DEFAULT 0,ggrp TEXT,UNIQUE(acct,sdmn,srvr,ptcl,atyp,port,path,agrp,sync,vwht,tkid,musr,ggrp));
+...
+CREATE TABLE cert(rowid INTEGER PRIMARY KEY AUTOINCREMENT,cdat REAL,mdat REAL,ctyp INTEGER NOT NULL DEFAULT 0,cenc INTEGER,labl BLOB,alis BLOB,subj BLOB,issr BLOB NOT NULL DEFAULT '',slnr BLOB NOT NULL DEFAULT '',skid BLOB,pkhh BLOB,data BLOB,agrp TEXT NOT NULL,pdmn TEXT,sync INTEGER NOT NULL DEFAULT 0,tomb INTEGER NOT NULL DEFAULT 0,sha1 BLOB,vwht TEXT,tkid TEXT,musr BLOB NOT NULL,UUID TEXT,sysb INTEGER DEFAULT 0,pcss INTEGER,pcsk BLOB,pcsi BLOB,persistref BLOB NOT NULL,clip INTEGER NOT NULL DEFAULT 0,ggrp TEXT,UNIQUE(ctyp,issr,slnr,agrp,sync,vwht,tkid,musr,ggrp));
+...
+CREATE TABLE keys(rowid INTEGER PRIMARY KEY AUTOINCREMENT,cdat REAL,mdat REAL,kcls INTEGER NOT NULL DEFAULT 0,labl BLOB,alis BLOB,perm INTEGER,priv INTEGER,modi INTEGER,klbl BLOB NOT NULL DEFAULT '',atag BLOB NOT NULL DEFAULT '',crtr INTEGER NOT NULL DEFAULT 0,type INTEGER NOT NULL DEFAULT 0,bsiz INTEGER NOT NULL DEFAULT 0,esiz INTEGER NOT NULL DEFAULT 0,sdat REAL NOT NULL DEFAULT 0,edat REAL NOT NULL DEFAULT 0,sens INTEGER,asen INTEGER,extr INTEGER,next INTEGER,encr INTEGER,decr INTEGER,drve INTEGER,sign INTEGER,vrfy INTEGER,snrc INTEGER,vyrc INTEGER,wrap INTEGER,unwp INTEGER,data BLOB,agrp TEXT NOT NULL,pdmn TEXT,sync INTEGER NOT NULL DEFAULT 0,tomb INTEGER NOT NULL DEFAULT 0,sha1 BLOB,vwht TEXT,tkid TEXT,musr BLOB NOT NULL,UUID TEXT,sysb INTEGER DEFAULT 0,pcss INTEGER,pcsk BLOB,pcsi BLOB,persistref BLOB NOT NULL,clip INTEGER NOT NULL DEFAULT 0,ggrp TEXT,UNIQUE(kcls,klbl,atag,crtr,type,bsiz,esiz,sdat,edat,agrp,sync,vwht,tkid,musr,ggrp));
+...
+```
+
+The output is heavily redacted for brevity, but illustrates the data:
+- `genp` stands for Generic Passwords (things that aren't tied to internet passwords such as WiFi passwords or app logins).
+- `inet` stores Internet Passwords (websites, FTP, mail accounts).
+- `cert` stores certificate information.
+- `keys` store private or public cryptographic keys.
+
