@@ -41,3 +41,39 @@ The output is heavily redacted for brevity, but illustrates the data:
 - `cert` stores certificate information.
 - `keys` store private or public cryptographic keys.
 
+Note that the secrets themselves are encrypted, so fetching the keychain files only gives you metadata.
+
+### The security utility
+You can use the `security` utility on macOS to interact with the keychain as well as unlocking passwords with it (if you have the user's password).  
+
+```
+jbo@McJbo ~ % security find-generic-password -s "my_secret"
+keychain: "/Users/jbo/Library/Keychains/login.keychain-db"
+version: 512
+class: "genp"
+attributes:
+    0x00000007 <blob>="my_secret"
+    0x00000008 <blob>=<NULL>
+    "acct"<blob>="jbo"
+    "cdat"<timedate>=0x32303234303531363032303934395A00  "20240516020949Z\000"
+    "crtr"<uint32>=<NULL>
+    "cusi"<sint32>=<NULL>
+    "desc"<blob>=<NULL>
+    "gena"<blob>=<NULL>
+    "icmt"<blob>=<NULL>
+    "invi"<sint32>=<NULL>
+    "mdat"<timedate>=0x32303234303531363032313033365A00  "20240516021036Z\000"
+    "nega"<sint32>=<NULL>
+    "prot"<blob>=<NULL>
+    "scrp"<sint32>=<NULL>
+    "svce"<blob>="my_secret"
+    "type"<uint32>=<NULL>
+```
+
+Note you can supply a `-w` to read the item but it pops up a password prompt:
+```
+jbo@McJbo ~ % security find-generic-password -s "my_secret" -w
+OmgThisPasswordIsSecret!
+```
+
+There are more flags and operations `security` can do - feel free to read in the [manual page](https://ss64.com/mac/security.html).
