@@ -131,7 +131,6 @@ print_acl_for_service(
             for (app_counter = 0; app_counter < CFArrayGetCount(trusted_apps); app_counter++)
             {
                 // Get the current App
-                SAFE_RELEASE(app_ref);
                 app_ref = (SecTrustedApplicationRef)CFArrayGetValueAtIndex(trusted_apps, app_counter);
 
                 // Get the trusted App data (best-effort)
@@ -163,7 +162,6 @@ cleanup:
 
     // Free resources
     SAFE_RELEASE(app_data);
-    SAFE_RELEASE(app_ref);
     SAFE_RELEASE(trusted_apps);
     SAFE_RELEASE(description);
     SAFE_RELEASE(acl_list);
