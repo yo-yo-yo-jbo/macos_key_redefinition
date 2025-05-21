@@ -92,6 +92,36 @@ Compilation is simple:
 clang -framework Foundation -framework Security show_keychain_acl.m -o show_keychain_acl
 ```
 
+You can run it and get interesting results, for instance:
+```
+jbo@McJbo ~ % ./show_keychain_acl "Apple Persistent State Encryption"
+2025-05-20 21:13:07.363 show_keychain_acl[45476:5264057] [+] ACLs for 'Apple Persistent State Encryption':
+2025-05-20 21:13:07.363 show_keychain_acl[45476:5264057]   [ACL #1]
+2025-05-20 21:13:07.363 show_keychain_acl[45476:5264057]     Description: Persistent Window Snapshots
+2025-05-20 21:13:07.363 show_keychain_acl[45476:5264057]     Prompt Selector: 0
+2025-05-20 21:13:07.363 show_keychain_acl[45476:5264057]     Trusted Applications: <none>
+2025-05-20 21:13:07.363 show_keychain_acl[45476:5264057]   [ACL #2]
+2025-05-20 21:13:07.363 show_keychain_acl[45476:5264057]     Description: Persistent Window Snapshots
+2025-05-20 21:13:07.363 show_keychain_acl[45476:5264057]     Prompt Selector: 0
+2025-05-20 21:13:07.363 show_keychain_acl[45476:5264057]     Trusted Applications:
+2025-05-20 21:13:07.363 show_keychain_acl[45476:5264057]       - /System/Library/CoreServices/talagent
+2025-05-20 21:13:07.363 show_keychain_acl[45476:5264057]   [ACL #3]
+2025-05-20 21:13:07.363 show_keychain_acl[45476:5264057]     Description: 78bddae9db019af99d018078390f7007ab30c413fa3bec96eed07920223cc2f6
+2025-05-20 21:13:07.363 show_keychain_acl[45476:5264057]     Prompt Selector: 0
+2025-05-20 21:13:07.363 show_keychain_acl[45476:5264057]     Trusted Applications: <none>
+2025-05-20 21:13:07.363 show_keychain_acl[45476:5264057]   [ACL #4]
+2025-05-20 21:13:07.363 show_keychain_acl[45476:5264057]     Description: 3c3f786d6c2076657273696f6e3d22312e302220656e636f64696e673d225554462d38223f3e0a3c21444f435459504520706c697374205055424c494320222d2f2f4170706c652f2f44544420504c49535420312e302f2f454e222022687474703a2f2f7777772e6170706c652e636f6d2f445444732f50726f70657274794c6973742d312e302e647464223e0a3c706c6973742076657273696f6e3d22312e30223e0a3c646963743e0a093c6b65793e506172746974696f6e733c2f6b65793e0a093c61727261793e0a09093c737472696e673e6170706c653a3c2f737472696e673e0a093c2f61727261793e0a3c2f646963743e0a3c2f706c6973743e0a
+2025-05-20 21:13:07.363 show_keychain_acl[45476:5264057]     Prompt Selector: 0
+2025-05-20 21:13:07.363 show_keychain_acl[45476:5264057]     Trusted Applications: <none>
+2025-05-20 21:13:07.363 show_keychain_acl[45476:5264057]   [ACL #5]
+2025-05-20 21:13:07.363 show_keychain_acl[45476:5264057]     Description: Persistent Window Snapshots
+2025-05-20 21:13:07.363 show_keychain_acl[45476:5264057]     Prompt Selector: 0
+2025-05-20 21:13:07.363 show_keychain_acl[45476:5264057]     Trusted Applications: <none>
+jbo@McJbo ~ %
+```
+
+Note the descriptions might be hex-encoded Plists or other data - there is no single format for those.
+
 ## Background - how CVE-2025-31191 worked
 I was originally looking into macOS Sandbox escapes - specifically, ones that involve a mechanism called Security-Scoped-Bookmarks.  
 That mechanism can save *persistent* access tokens to arbitrary files by a sandboxed app - and by definition - the sandboxed app must have access to that persistent storage.  
@@ -104,7 +134,33 @@ Then I had an idea - what if instead of reading the secret, I would delete the e
 - Note the ACL does not prevent the keychain item from being deleted.
 
 That worked really well, and I call that technique "keychain item redefinition attack".  
-Apple's fix, by the way, consists of a new keychain item called `com.apple.scopedbookmarksagent.xpc.encrypted` - I haven't investigated that yet, and it could be a cool area of research!
+Apple's fix, by the way, consists of a new keychain item called `com.apple.scopedbookmarksagent.xpc.encrypted` - I haven't investigated that yet, and it could be a cool area of research!  
+For what it's worth, the ACLs for it are exactly the same as the "normal" `com.apple.scopedbookmarksagent.xpc`:  
+```
+jbo@McJbo ~ % ./show_keychain_acl "com.apple.scopedbookmarksagent.xpc.encrypted"
+2025-05-20 21:15:49.629 show_keychain_acl[45703:5267654] [+] ACLs for 'com.apple.scopedbookmarksagent.xpc.encrypted':
+2025-05-20 21:15:49.630 show_keychain_acl[45703:5267654]   [ACL #1]
+2025-05-20 21:15:49.630 show_keychain_acl[45703:5267654]     Description: com.apple.scopedbookmarksagent.xpc.encrypted
+2025-05-20 21:15:49.630 show_keychain_acl[45703:5267654]     Prompt Selector: 0
+2025-05-20 21:15:49.630 show_keychain_acl[45703:5267654]     Trusted Applications: <none>
+2025-05-20 21:15:49.630 show_keychain_acl[45703:5267654]   [ACL #2]
+2025-05-20 21:15:49.630 show_keychain_acl[45703:5267654]     Description: com.apple.scopedbookmarksagent.xpc.encrypted
+2025-05-20 21:15:49.630 show_keychain_acl[45703:5267654]     Prompt Selector: 0
+2025-05-20 21:15:49.630 show_keychain_acl[45703:5267654]     Trusted Applications:
+2025-05-20 21:15:49.630 show_keychain_acl[45703:5267654]       - /System/Library/CoreServices/ScopedBookmarkAgent
+2025-05-20 21:15:49.630 show_keychain_acl[45703:5267654]   [ACL #3]
+2025-05-20 21:15:49.630 show_keychain_acl[45703:5267654]     Description: 9f0d69e824f28e07c7aa8226604920dcff845bfc74a4a41141aba56682c0c68f
+2025-05-20 21:15:49.630 show_keychain_acl[45703:5267654]     Prompt Selector: 0
+2025-05-20 21:15:49.630 show_keychain_acl[45703:5267654]     Trusted Applications: <none>
+2025-05-20 21:15:49.630 show_keychain_acl[45703:5267654]   [ACL #4]
+2025-05-20 21:15:49.630 show_keychain_acl[45703:5267654]     Description: 3c3f786d6c2076657273696f6e3d22312e302220656e636f64696e673d225554462d38223f3e0a3c21444f435459504520706c697374205055424c494320222d2f2f4170706c652f2f44544420504c49535420312e302f2f454e222022687474703a2f2f7777772e6170706c652e636f6d2f445444732f50726f70657274794c6973742d312e302e647464223e0a3c706c6973742076657273696f6e3d22312e30223e0a3c646963743e0a093c6b65793e506172746974696f6e733c2f6b65793e0a093c61727261793e0a09093c737472696e673e6170706c653a3c2f737472696e673e0a093c2f61727261793e0a3c2f646963743e0a3c2f706c6973743e0a
+2025-05-20 21:15:49.630 show_keychain_acl[45703:5267654]     Prompt Selector: 0
+2025-05-20 21:15:49.630 show_keychain_acl[45703:5267654]     Trusted Applications: <none>
+2025-05-20 21:15:49.630 show_keychain_acl[45703:5267654]   [ACL #5]
+2025-05-20 21:15:49.630 show_keychain_acl[45703:5267654]     Description: com.apple.scopedbookmarksagent.xpc.encrypted
+2025-05-20 21:15:49.630 show_keychain_acl[45703:5267654]     Prompt Selector: 0
+2025-05-20 21:15:49.630 show_keychain_acl[45703:5267654]     Trusted Applications: <none>
+```
 
 ## Stealing browser secrets with key redefinition attacks
 One idea that comes to mind is using the same concept of redefining a keychain item to control secrets.  
@@ -199,4 +255,34 @@ attributes:
     "scrp"<sint32>=<NULL>
     "svce"<blob>="Claude Safe Storage"
     "type"<uint32>=<NULL>
+jbo@McJbo ~ % ./show_keychain_acl "Claude Safe Storage"
+2025-05-20 21:16:55.394 show_keychain_acl[45798:5268992] [+] ACLs for 'Claude Safe Storage':
+2025-05-20 21:16:55.394 show_keychain_acl[45798:5268992]   [ACL #1]
+2025-05-20 21:16:55.395 show_keychain_acl[45798:5268992]     Description: Claude Safe Storage
+2025-05-20 21:16:55.395 show_keychain_acl[45798:5268992]     Prompt Selector: 0
+2025-05-20 21:16:55.395 show_keychain_acl[45798:5268992]     Trusted Applications:
+2025-05-20 21:16:55.395 show_keychain_acl[45798:5268992]       - /Applications/Claude.app
+2025-05-20 21:16:55.395 show_keychain_acl[45798:5268992]   [ACL #2]
+2025-05-20 21:16:55.395 show_keychain_acl[45798:5268992]     Description: Claude Safe Storage
+2025-05-20 21:16:55.395 show_keychain_acl[45798:5268992]     Prompt Selector: 0
+2025-05-20 21:16:55.395 show_keychain_acl[45798:5268992]     Trusted Applications: <none>
+2025-05-20 21:16:55.395 show_keychain_acl[45798:5268992]   [ACL #3]
+2025-05-20 21:16:55.395 show_keychain_acl[45798:5268992]     Description: 75479f5297a4de3c6921707ccd8bf9d526d4e2f7acc6856492a567bf87c9d6c4
+2025-05-20 21:16:55.395 show_keychain_acl[45798:5268992]     Prompt Selector: 0
+2025-05-20 21:16:55.395 show_keychain_acl[45798:5268992]     Trusted Applications: <none>
+2025-05-20 21:16:55.395 show_keychain_acl[45798:5268992]   [ACL #4]
+2025-05-20 21:16:55.395 show_keychain_acl[45798:5268992]     Description: 3c3f786d6c2076657273696f6e3d22312e302220656e636f64696e673d225554462d38223f3e0a3c21444f435459504520706c697374205055424c494320222d2f2f4170706c652f2f44544420504c49535420312e302f2f454e222022687474703a2f2f7777772e6170706c652e636f6d2f445444732f50726f70657274794c6973742d312e302e647464223e0a3c706c6973742076657273696f6e3d22312e30223e0a3c646963743e0a093c6b65793e506172746974696f6e733c2f6b65793e0a093c61727261793e0a09093c737472696e673e7465616d69643a51364c325346365944573c2f737472696e673e0a093c2f61727261793e0a3c2f646963743e0a3c2f706c6973743e0a
+2025-05-20 21:16:55.395 show_keychain_acl[45798:5268992]     Prompt Selector: 0
+2025-05-20 21:16:55.395 show_keychain_acl[45798:5268992]     Trusted Applications: <none>
+2025-05-20 21:16:55.395 show_keychain_acl[45798:5268992]   [ACL #5]
+2025-05-20 21:16:55.395 show_keychain_acl[45798:5268992]     Description: Claude Safe Storage
+2025-05-20 21:16:55.395 show_keychain_acl[45798:5268992]     Prompt Selector: 0
+2025-05-20 21:16:55.395 show_keychain_acl[45798:5268992]     Trusted Applications: <none>
 ```
+
+## Summary
+Setting security keys is a cool technique for offensive security but should be used with care since it might create a very noticable user experience.  
+However, once a redefinition happens, the entire cryptographic security collapses.  
+Stay tuned!
+
+Jonathan Bar Or
