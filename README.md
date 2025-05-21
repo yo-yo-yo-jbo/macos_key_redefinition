@@ -170,4 +170,28 @@ security add-generic-password -A -a "Chrome Safe Storage" -w "AAAAAAAAAAAAAAAAAA
 This deletes the old master secret and sets a new one as `AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA` instead.  
 Note the `-A` flag which sets up an empty ACL for the item, making all applications accessible to this secret. Of course, a more sophisticated attacker could set up an ACL exclusive to Chrome.
 Also note all Chromium browsers are similar but might have different names (e.g. you'll see an "Edge Safe Storage" for Edge and a "Brave Safe Storage" for Brave).  
-More interestingly, this also works for Electron Apps that use V8 - for instance, `Claude Desktop`.
+More interestingly, this also works for Electron Apps that use V8 - for instance, `Claude Desktop`:
+
+```
+jbo@McJbo ~ % security find-generic-password -s "Claude Safe Storage"
+keychain: "/Users/jbo/Library/Keychains/login.keychain-db"
+version: 512
+class: "genp"
+attributes:
+    0x00000007 <blob>="Claude Safe Storage"
+    0x00000008 <blob>=<NULL>
+    "acct"<blob>="Claude Key"
+    "cdat"<timedate>=0x32303235303433303139313033355A00  "20250430191035Z\000"
+    "crtr"<uint32>="aapl"
+    "cusi"<sint32>=<NULL>
+    "desc"<blob>=<NULL>
+    "gena"<blob>=<NULL>
+    "icmt"<blob>=<NULL>
+    "invi"<sint32>=<NULL>
+    "mdat"<timedate>=0x32303235303433303139313033355A00  "20250430191035Z\000"
+    "nega"<sint32>=<NULL>
+    "prot"<blob>=<NULL>
+    "scrp"<sint32>=<NULL>
+    "svce"<blob>="Claude Safe Storage"
+    "type"<uint32>=<NULL>
+```
