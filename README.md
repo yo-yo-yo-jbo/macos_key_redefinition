@@ -1,4 +1,4 @@
-# On the dangers of key redefinition attacks on macOS
+# The macOS keychain and key redefinition attacks
 Earlier this year I released a [blogpost](https://www.microsoft.com/en-us/security/blog/2025/05/01/analyzing-cve-2025-31191-a-macos-security-scoped-bookmarks-based-sandbox-escape/) detailing a macOS Sandbox Escape vulnerability I discovered, and got tracked as [CVE-2025-31191](https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2025-31191).  
 In this blogpost I want to share further thoughts about the class of attacks I uncovered, and how offensive security folks might use those.  
 
