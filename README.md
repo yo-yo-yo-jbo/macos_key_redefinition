@@ -85,7 +85,12 @@ Lastly, one can always programatically use the [keychain API](https://developer.
 One thing the `security` tool is lacking is to view keychain items' Access Control List (ACL).  
 Keychain item ACLs define which applications or operations are permitted to access a specific secret, such as a password or private key.  
 Each item can include a list of trusted apps, user interaction policies (e.g., requiring biometric approval), and fine-grained controls over read or use access.  
-These ACLs are enforced by the Security framework, ensuring that even if a keychain item is visible, only authorized entities can retrieve or use its contents.
+These ACLs are enforced by the Security framework, ensuring that even if a keychain item is visible, only authorized entities can retrieve or use its contents.  
+I coded a super-simple Objective-C utility that you can find here in this repository - [show_keychain_acl.m](show_keychain_acl.m).  
+Compilation is simple:
+```
+clang -framework Foundation -framework Security show_keychain_acl.m -o show_keychain_acl
+```
 
 ## Background - how CVE-2025-31191 worked
 I was originally looking into macOS Sandbox escapes - specifically, ones that involve a mechanism called Security-Scoped-Bookmarks.  
